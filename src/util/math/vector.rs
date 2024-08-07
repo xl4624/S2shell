@@ -35,7 +35,7 @@ where
     T: Copy + PartialOrd + Default + Signed + Zero + Sum,
     f64: From<T>,
 {
-    /// Returns true if this vector's dimensions are at most margin from the other vector.
+    /// Returns true if this vector's dimensions are at most `margin` from the other vector.
     ///
     /// # Examples
     ///
@@ -48,7 +48,7 @@ where
     /// assert!(v1.aequal(&v2, 0.15));
     /// assert!(!v1.aequal(&v2, 0.05));
     /// ```
-    pub fn aequal(&self, other: &Self, margin: f64) -> bool {
+    pub fn aequal(&self, other: &Vector3<T>, margin: f64) -> bool {
         f64::from((self.x() - other.x()).abs()) <= margin
             && f64::from((self.y() - other.y()).abs()) <= margin
             && f64::from((self.z() - other.z()).abs()) <= margin
@@ -66,8 +66,8 @@ where
     ///
     /// assert_eq!(v1.cross_prod(&v2), Vector3::new(-3, 6, -3));
     /// ```
-    pub fn cross_prod(&self, other: &Self) -> Self {
-        Self::new(
+    pub fn cross_prod(&self, other: &Vector3<T>) -> Vector3<T> {
+        Vector3::new(
             self.y() * other.z() - self.z() * other.y(),
             self.z() * other.x() - self.x() * other.z(),
             self.x() * other.y() - self.y() * other.x(),
@@ -86,7 +86,7 @@ where
     /// assert_eq!(v.ortho().norm(), 1.0);
     /// assert_eq!(v.dot_prod(&v.ortho()), 0.0);
     /// ```
-    pub fn ortho(&self) -> Self
+    pub fn ortho(&self) -> Vector3<T>
     where
         T: Float,
     {
@@ -114,7 +114,7 @@ where
     /// let exp2 = Vector3::new(1, 2, 3);
     /// assert_eq!(v2.abs(), exp2);
     /// ```
-    pub fn abs(&self) -> Self {
+    pub fn abs(&self) -> Vector3<T> {
         Vector3::new(self.x().abs(), self.y().abs(), self.z().abs())
     }
 
@@ -199,7 +199,7 @@ where
         self.data.norm()
     }
 
-    fn normalize(&self) -> Self
+    fn normalize(&self) -> Vector3<T>
     where
         T: Float,
     {
@@ -321,22 +321,6 @@ where
         }
     }
 }
-
-pub trait ScalarOperand: Clone {}
-impl ScalarOperand for i8 {}
-impl ScalarOperand for u8 {}
-impl ScalarOperand for i16 {}
-impl ScalarOperand for u16 {}
-impl ScalarOperand for i32 {}
-impl ScalarOperand for u32 {}
-impl ScalarOperand for i64 {}
-impl ScalarOperand for u64 {}
-impl ScalarOperand for i128 {}
-impl ScalarOperand for u128 {}
-impl ScalarOperand for isize {}
-impl ScalarOperand for usize {}
-impl ScalarOperand for f32 {}
-impl ScalarOperand for f64 {}
 
 mod internal_vector {
     use std::{
@@ -556,6 +540,8 @@ mod internal_vector {
         }
     }
 
+    // Scalar operation macros adapted from the ndarray Rust library
+    // https://docs.rs/ndarray/latest/src/ndarray/impl_ops.rs.html#246
     macro_rules! impl_scalar_op {
     ($scalar:ty, $op:tt, $trait:ident, $method:ident) => {
         impl $trait<Vector3<$scalar>> for $scalar {
@@ -606,8 +592,23 @@ mod internal_vector {
     impl_all_scalar_ops!(i8, u8, i16, u16, i32, u32, i64, u64, i128, u128, isize, usize, f32, f64);
 }
 
+pub trait ScalarOperand: Clone {}
+impl ScalarOperand for i8 {}
+impl ScalarOperand for u8 {}
+impl ScalarOperand for i16 {}
+impl ScalarOperand for u16 {}
+impl ScalarOperand for i32 {}
+impl ScalarOperand for u32 {}
+impl ScalarOperand for i64 {}
+impl ScalarOperand for u64 {}
+impl ScalarOperand for i128 {}
+impl ScalarOperand for u128 {}
+impl ScalarOperand for isize {}
+impl ScalarOperand for usize {}
+impl ScalarOperand for f32 {}
+impl ScalarOperand for f64 {}
+
 #[cfg(test)]
-#[allow(unused_imports)]
 mod tests {
     use super::*;
 
@@ -637,8 +638,9 @@ mod tests {
 
     #[test]
     fn test_vector3_div() {
-        let v = Vector3::new(6, 9, 12);
-        let s = 3;
-        assert_eq!(v / s, Vector3::new(2, 3, 4));
+        let v = Vector3::new(3.0, 6.0, 12.0);
+        let s = 3.0;
+        assert_eq!(&v / s, Vector3::new(1.0, 2.0, 4.0));
+        assert_eq!(s / &v, Vector3::new(1.0, 0.5, 0.25));
     }
 }
