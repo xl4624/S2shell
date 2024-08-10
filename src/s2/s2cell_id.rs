@@ -1,3 +1,5 @@
+use crate::s2::s2point::S2Point;
+
 /// An S2CellId is a 64-bit unsigned integer that uniquely identifies a
 /// cell in the S2 cell decomposition.  It has the following format:
 ///
@@ -33,7 +35,9 @@
 /// This class is intended to be copied by value as desired.  It uses
 /// the default copy constructor and assignment operator.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub struct S2CellId(u64);
+pub struct S2CellId {
+    id: u64,
+}
 
 impl S2CellId {
     // Although only 60 bits are needed to represent the index of a leaf cell, the
@@ -46,17 +50,104 @@ impl S2CellId {
     pub const POS_BITS: i8 = 2 * S2CellId::MAX_LEVEL + 1;
     pub const MAX_SIZE: i32 = 1 << S2CellId::MAX_LEVEL;
 
-    pub fn new(id: u64) -> Self {
-        S2CellId(id)
+    pub fn new(id: u64) -> S2CellId {
+        S2CellId { id }
+    }
+
+    pub fn id(&self) -> u64 {
+        self.id
+    }
+
+    pub fn face(&self) -> i8 {
+        (self.id >> Self::POS_BITS) as i8
+    }
+
+    pub fn pos(&self) -> u64 {
+        todo!()
+    }
+
+    pub fn level(&self) -> i8 {
+        todo!()
     }
 
     /// Returns an invalid cell id.
-    pub fn none() -> Self {
-        S2CellId(0)
+    pub fn none() -> S2CellId {
+        S2CellId::new(0)
     }
 
     /// Returns an invalid cell id guaranteed to be larger than any valid cell id. Useful for creating indexes
-    pub fn sentinel() -> Self {
-        S2CellId(u64::MAX)
+    pub fn sentinel() -> S2CellId {
+        S2CellId::new(u64::MAX)
+    }
+
+    pub fn from_face(face: i8) -> S2CellId {
+        todo!()
+    }
+
+    pub fn from_face_pos_level(face: i8, pos: u64, level: i8) -> S2CellId {
+        todo!()
+    }
+
+
+    fn to_point_raw(&self) -> S2Point {
+        todo!();
+    }
+
+    // pub fn get_center_st() -> R2Point {
+    //     todo!()
+    // }
+
+    pub fn get_size_st() -> f64 {
+        todo!()
+    }
+
+    pub fn get_size_st_at_level(level: i8) -> f64 {
+        todo!()
+    }
+
+    // pub fn get_bound_st() -> R2Rect {
+    //     todo!()
+    // }
+
+    // pub fn get_center_uv(&self) -> R2Point {
+    //     todo!()
+    // }
+
+    // pub fn get_bound_uv(&self) -> R2Rect {
+    //     todo!()
+    // }
+
+    // pub fn expanded_by_distance_uv(&self, uv: &R2Rect, distance: S1Angle) -> R2Rect {
+    //     todo!()
+    // }
+
+    pub fn get_center_siti(psi: i32, pti: i32) -> i32 {
+        todo!()
+    }
+
+    pub fn is_valid(&self) -> bool {
+        const LSB_MASK: u64 = 0x1555555555555555;
+        self.face() < Self::NUM_FACES && (self.lsb() & LSB_MASK) != 0
+    }
+
+    pub fn lsb(&self) -> u64 {
+        self.id & (!self.id + 1)
+    }
+
+    pub fn lsb_for_level(&self, level: i8) -> u64 {
+            1_u64 << (2 * (Self::MAX_LEVEL - level))
     }
 }
+
+impl Into<S2Point> for S2CellId {
+    fn into(self) -> S2Point {
+        self.to_point_raw().normalize()
+    }
+}
+
+// impl Into<S2LatLng> for S2CellId {
+//     fn into(self) -> S2LatLng {
+//         todo!()
+//     }
+// }
+

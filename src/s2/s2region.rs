@@ -6,4 +6,5 @@
 // of virtual methods that are implemented by all subtypes, the interface
 // is restricted to methods that are useful for computing approximations.
 #[derive(Debug)]
-pub struct S2Region {}
+pub struct S2Region {
+}

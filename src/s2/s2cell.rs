@@ -1,16 +1,16 @@
 use std::cmp::Ordering;
 
-use super::s2cell_id::S2CellId;
+use crate::s2::s2cell_id::S2CellId;
 
 ///An S2Cell is an S2Region object that represents a cell.  Unlike S2CellIds,
 /// it supports efficient containment and intersection tests.  However, it is
 /// also a more expensive representation (currently 48 bytes rather than 8).
 #[derive(Debug, Clone)]
 pub struct S2Cell {
+    id: S2CellId,
     face: i8,
     level: i8,
     orientation: i8,
-    id: S2CellId,
 }
 
 enum BoundaryEdge {
