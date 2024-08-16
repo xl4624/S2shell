@@ -1,16 +1,14 @@
-use std::cmp::Ordering;
-
 use crate::s2::s2cell_id::S2CellId;
 
-///An S2Cell is an S2Region object that represents a cell.  Unlike S2CellIds,
-/// it supports efficient containment and intersection tests.  However, it is
-/// also a more expensive representation (currently 48 bytes rather than 8).
+/// An S2Cell is an S2Region object that represents a cell. Unlike S2CellId's,
+/// it supports efficient containment and intersection tests. However, it is
+/// also a more expensive representation.
 #[derive(Debug, Clone)]
 pub struct S2Cell {
     id: S2CellId,
-    face: i8,
-    level: i8,
-    orientation: i8,
+    face: i32,
+    level: i32,
+    orientation: i32,
 }
 
 enum BoundaryEdge {
@@ -21,51 +19,47 @@ enum BoundaryEdge {
 }
 
 impl S2Cell {
+    /// Creates a new S2CellId from a 64-bit unsigned integer.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use s2shell::s2::s2cell_id::S2CellId;
+    ///
+    /// let cell_id = S2CellId::new(123456789);
+    /// assert_eq!(cell_id.id(), 123456789);
+    /// ```
     pub fn new(id: S2CellId) -> Self {
-        unimplemented!()
+        let (face, i, j, orientation) = id.to_face_ij_orientation();
+        S2Cell {
+            id,
+            face,
+            orientation,
+            level: id.level(),
+        }
     }
 
-    pub fn from_face(face: i8) -> Self {
-        unimplemented!()
+    pub fn from_face(face: i32) -> Self {
+        todo!()
     }
 
     pub fn id(&self) -> S2CellId {
         self.id
     }
 
-    pub fn face(&self) -> i8 {
+    pub fn face(&self) -> i32 {
         self.face
     }
 
-    pub fn level(&self) -> i8 {
+    pub fn level(&self) -> i32 {
         self.level
     }
 
-    pub fn orientation(&self) -> i8 {
+    pub fn orientation(&self) -> i32 {
         self.orientation
     }
 
     pub fn is_leaf(&self) -> bool {
         self.level == S2CellId::MAX_LEVEL
-    }
-}
-
-impl PartialEq for S2Cell {
-    fn eq(&self, other: &S2Cell) -> bool {
-        self.id == other.id
-    }
-}
-
-impl Eq for S2Cell {}
-
-impl PartialOrd for S2Cell {
-    fn partial_cmp(&self, other: &S2Cell) -> Option<Ordering> {
-        Some(self.id.cmp(&other.id))
-    }
-}
-
-impl Ord for S2Cell {
-    fn cmp(&self, other: &S2Cell) -> Ordering {
-        self.id.cmp(&other.id)
     }
 }

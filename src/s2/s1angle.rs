@@ -2,17 +2,17 @@ use std::f64::consts::PI;
 
 use crate::s2::s2point::S2Point;
 
-// This class represents a one-dimensional angle (as opposed to a
-// two-dimensional solid angle).  It has methods for converting angles to
-// or from radians, degrees, and the E5/E6/E7 representations (i.e. degrees
-// multiplied by 1e5/1e6/1e7 and rounded to the nearest integer).
+/// This class represents a one-dimensional angle (as opposed to a
+/// two-dimensional solid angle).  It has methods for converting angles to
+/// or from radians, degrees, and the E5/E6/E7 representations (i.e. degrees
+/// multiplied by 1e5/1e6/1e7 and rounded to the nearest integer).
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
 pub struct S1Angle {
     radians: f64,
 }
 
 impl S1Angle {
-    /// Creates an `S1Angle` from a value in radians.
+    /// Creates an S1Angle from a value in radians.
     ///
     /// # Examples
     ///
@@ -27,7 +27,7 @@ impl S1Angle {
         S1Angle { radians }
     }
 
-    /// Creates an `S1Angle` from a value in degrees.
+    /// Creates an S1Angle from a value in degrees.
     ///
     /// # Examples
     ///
@@ -42,7 +42,20 @@ impl S1Angle {
         S1Angle::from_radians(degrees * PI / 180.0)
     }
 
-    pub fn from_points(x: S2Point, y: S2Point) -> S1Angle {
+    /// Creates an S1Angle from two S2Point's.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use s2shell::s2::{s1angle::S1Angle, s2point::S2Point};
+    ///
+    /// let p1 = S2Point::new(1.0, 0.0, 0.0);
+    /// let p2 = S2Point::new(0.0, 1.0, 0.0);
+    ///
+    /// let angle = S1Angle::from_points(&p1, &p2);
+    /// assert_eq!(angle.degrees(), 90.0);
+    /// ```
+    pub fn from_points(x: &S2Point, y: &S2Point) -> S1Angle {
         S1Angle::from_radians(x.angle(y))
     }
 
@@ -88,11 +101,5 @@ impl S1Angle {
             radians -= 2.0 * PI;
         }
         S1Angle::from_radians(radians)
-    }
-}
-
-impl Default for S1Angle {
-    fn default() -> S1Angle {
-        S1Angle::zero()
     }
 }

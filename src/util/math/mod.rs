@@ -1,6 +1,7 @@
 use num_traits::{Num, NumCast};
 
 pub mod vector;
+pub use vector::Vector2;
 pub use vector::Vector3;
 
 pub trait Scalar: Copy + Clone + Num + NumCast + PartialOrd {}
