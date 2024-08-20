@@ -37,7 +37,7 @@ use crate::s2::{
 /// (although not all methods enforce this).
 ///
 /// This class is intended to be copied by value as desired.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Copy, Clone, PartialEq, PartialOrd)]
 pub struct S2CellId {
     id: u64,
 }

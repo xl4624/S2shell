@@ -1,6 +1,6 @@
 use num_traits::ToPrimitive;
 
-use crate::s2::{r2::R2Point, s2point::S2Point};
+use crate::r2::R2Point;
 
 // This file contains documentation of the various coordinate systems used
 // throughout the library. Most importantly, S2 defines a framework for
@@ -139,7 +139,7 @@ pub fn ij_to_st_min(i: i32) -> f64 {
 ///
 /// # Examples
 /// ```
-/// use s2shell::s2::{LIMIT_IJ, st_to_ij};
+/// use s2shell::s2::{st_to_ij, LIMIT_IJ};
 ///
 /// let s = 0.5_f64;
 /// assert_eq!(st_to_ij(s), LIMIT_IJ / 2);
@@ -195,12 +195,18 @@ pub fn get_face(p: &S2Point) -> i32 {
     }
 }
 
-pub mod r2;
-pub mod s1angle;
 pub mod s2cap;
 pub mod s2cell;
 pub mod s2cell_id;
+pub mod s2latlng_rect;
 pub mod s2point;
 pub mod s2region;
+
+pub use s2cap::S2Cap;
+pub use s2cell::S2Cell;
+pub use s2cell_id::S2CellId;
+pub use s2latlng_rect::S2LatLngRect;
+pub use s2point::S2Point;
+pub use s2region::S2Region;
 
 mod internal;

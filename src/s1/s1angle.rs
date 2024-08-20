@@ -1,6 +1,6 @@
 use std::f64::consts::PI;
 
-use crate::s2::s2point::S2Point;
+use crate::{s1::S1ChordAngle, s2::s2point::S2Point};
 
 /// This class represents a one-dimensional angle (as opposed to a
 /// two-dimensional solid angle).  It has methods for converting angles to
@@ -17,7 +17,7 @@ impl S1Angle {
     /// # Examples
     ///
     /// ```
-    /// use s2shell::s2::s1angle::S1Angle;
+    /// use s2shell::s1::s1angle::S1Angle;
     /// use std::f64::consts::PI;
     ///
     /// let angle = S1Angle::from_radians(PI / 2.0);
@@ -32,7 +32,7 @@ impl S1Angle {
     /// # Examples
     ///
     /// ```
-    /// use s2shell::s2::s1angle::S1Angle;
+    /// use s2shell::s1::S1Angle;
     /// use std::f64::consts::PI;
     ///
     /// let angle = S1Angle::from_degrees(90.0);
@@ -47,7 +47,7 @@ impl S1Angle {
     /// # Examples
     ///
     /// ```
-    /// use s2shell::s2::{s1angle::S1Angle, s2point::S2Point};
+    /// use s2shell::{s1::S1Angle, s2::S2Point};
     ///
     /// let p1 = S2Point::new(1.0, 0.0, 0.0);
     /// let p2 = S2Point::new(0.0, 1.0, 0.0);
@@ -84,7 +84,7 @@ impl S1Angle {
     /// # Examples
     ///
     /// ```
-    /// use s2shell::s2::s1angle::S1Angle;
+    /// use s2shell::s1::S1Angle;
     ///
     /// let angle = S1Angle::from_degrees(270.0);
     /// assert_eq!(angle.normalize().degrees(), -90.0);
@@ -101,5 +101,17 @@ impl S1Angle {
             radians -= 2.0 * PI;
         }
         S1Angle::from_radians(radians)
+    }
+}
+
+impl From<S1ChordAngle> for S1Angle {
+    fn from(value: S1ChordAngle) -> S1Angle {
+        if value.is_negative() {
+            S1Angle::from_radians(-1.0)
+        } else if value.is_infinity() {
+            S1Angle::infinity()
+        } else {
+            S1Angle::from_radians(2.0 * (0.5 * (value.length2()).sqrt()).asin())
+        }
     }
 }

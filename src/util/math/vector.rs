@@ -68,7 +68,7 @@ impl<T: Scalar> Vector2<T> {
     /// use s2shell::util::math::Vector2;
     ///
     /// let v1 = Vector2::new(1, 2);
-    /// assert_eq!(v1.norm2(), 5);  // 1^2 + 2^2 = 1 + 4 = 5
+    /// assert_eq!(v1.norm2(), 5); // 1^2 + 2^2 = 1 + 4 = 5
     /// ```
     ///
     /// # Note
@@ -98,14 +98,11 @@ impl<T: Scalar> Vector2<T> {
     /// # Examples
     ///
     /// ```
-    /// use s2shell::util::math::Vector2;
     /// use approx::assert_relative_eq;
+    /// use s2shell::util::math::Vector2;
     ///
     /// let v: Vector2<f64> = Vector2::new(1.0, 2.0);
-    /// let exp: Vector2<f64> = Vector2::new(
-    ///     1.0 / v.norm(),
-    ///     2.0 / v.norm(),
-    /// );
+    /// let exp: Vector2<f64> = Vector2::new(1.0 / v.norm(), 2.0 / v.norm());
     /// assert_relative_eq!(v.normalize(), exp);
     /// assert_relative_eq!(v.normalize().norm(), 1.0);
     /// ```
@@ -209,7 +206,7 @@ impl<T: Scalar> Vector3<T> {
     /// use s2shell::util::math::Vector3;
     ///
     /// let v1 = Vector3::new(1, 2, 3);
-    /// assert_eq!(v1.norm2(), 14);  // 1^2 + 2^2 + 3^2 = 1 + 4 + 9
+    /// assert_eq!(v1.norm2(), 14); // 1^2 + 2^2 + 3^2 = 1 + 4 + 9
     /// ```
     ///
     /// # Note
@@ -242,15 +239,11 @@ impl<T: Scalar> Vector3<T> {
     /// # Examples
     ///
     /// ```
-    /// use s2shell::util::math::Vector3;
     /// use approx::assert_relative_eq;
+    /// use s2shell::util::math::Vector3;
     ///
     /// let v: Vector3<f64> = Vector3::new(3.0, 4.0, 5.0);
-    /// let exp: Vector3<f64> = Vector3::new(
-    ///     3.0 / v.norm(),
-    ///     4.0 / v.norm(),
-    ///     5.0 / v.norm(),
-    /// );
+    /// let exp: Vector3<f64> = Vector3::new(3.0 / v.norm(), 4.0 / v.norm(), 5.0 / v.norm());
     ///
     /// assert_relative_eq!(v.normalize(), exp);
     /// assert_relative_eq!(v.normalize().norm(), 1.0);
@@ -418,6 +411,14 @@ impl<T: Scalar> Add for Vector2<T> {
     type Output = Vector2<T>;
 
     fn add(self, rhs: Vector2<T>) -> Self::Output {
+        &self + &rhs
+    }
+}
+
+impl<T: Scalar> Add for &Vector2<T> {
+    type Output = Vector2<T>;
+
+    fn add(self, rhs: &Vector2<T>) -> Self::Output {
         Vector2::new(self.x + rhs.x, self.y + rhs.y)
     }
 }
@@ -426,6 +427,14 @@ impl<T: Scalar> Add for Vector3<T> {
     type Output = Vector3<T>;
 
     fn add(self, rhs: Vector3<T>) -> Self::Output {
+        &self + &rhs
+    }
+}
+
+impl<T: Scalar> Add for &Vector3<T> {
+    type Output = Vector3<T>;
+
+    fn add(self, rhs: &Vector3<T>) -> Self::Output {
         Vector3::new(self.x + rhs.x, self.y + rhs.y, self.z + rhs.z)
     }
 }
@@ -434,6 +443,14 @@ impl<T: Scalar> Sub for Vector2<T> {
     type Output = Vector2<T>;
 
     fn sub(self, rhs: Vector2<T>) -> Self::Output {
+        &self - &rhs
+    }
+}
+
+impl<T: Scalar> Sub for &Vector2<T> {
+    type Output = Vector2<T>;
+
+    fn sub(self, rhs: &Vector2<T>) -> Self::Output {
         Vector2::new(self.x - rhs.x, self.y - rhs.y)
     }
 }
@@ -442,6 +459,14 @@ impl<T: Scalar> Sub for Vector3<T> {
     type Output = Vector3<T>;
 
     fn sub(self, rhs: Vector3<T>) -> Self::Output {
+        &self - &rhs
+    }
+}
+
+impl<T: Scalar> Sub for &Vector3<T> {
+    type Output = Vector3<T>;
+
+    fn sub(self, rhs: &Vector3<T>) -> Self::Output {
         Vector3::new(self.x - rhs.x, self.y - rhs.y, self.z - rhs.z)
     }
 }
@@ -450,11 +475,27 @@ impl<T: Scalar> Mul<T> for Vector2<T> {
     type Output = Vector2<T>;
 
     fn mul(self, scalar: T) -> Self::Output {
+        &self * scalar
+    }
+}
+
+impl<T: Scalar> Mul<T> for &Vector2<T> {
+    type Output = Vector2<T>;
+
+    fn mul(self, scalar: T) -> Self::Output {
         Vector2::new(self.x * scalar, self.y * scalar)
     }
 }
 
 impl<T: Scalar> Mul<T> for Vector3<T> {
+    type Output = Vector3<T>;
+
+    fn mul(self, scalar: T) -> Self::Output {
+        &self * scalar
+    }
+}
+
+impl<T: Scalar> Mul<T> for &Vector3<T> {
     type Output = Vector3<T>;
 
     fn mul(self, scalar: T) -> Self::Output {
@@ -468,6 +509,13 @@ macro_rules! impl_scalar_mul {
             impl Mul<Vector2<$ty>> for $ty {
                 type Output = Vector2<$ty>;
                 fn mul(self, rhs: Vector2<$ty>) -> Self::Output {
+                    self * &rhs
+                }
+            }
+
+            impl Mul<&Vector2<$ty>> for $ty {
+                type Output = Vector2<$ty>;
+                fn mul(self, rhs: &Vector2<$ty>) -> Self::Output {
                     Vector2::new(self * rhs.x, self * rhs.y)
                 }
             }
@@ -475,6 +523,13 @@ macro_rules! impl_scalar_mul {
             impl Mul<Vector3<$ty>> for $ty {
                 type Output = Vector3<$ty>;
                 fn mul(self, rhs: Vector3<$ty>) -> Self::Output {
+                    self * &rhs
+                }
+            }
+
+            impl Mul<&Vector3<$ty>> for $ty {
+                type Output = Vector3<$ty>;
+                fn mul(self, rhs: &Vector3<$ty>) -> Self::Output {
                     Vector3::new(self * rhs.x, self * rhs.y, self * rhs.z)
                 }
             }

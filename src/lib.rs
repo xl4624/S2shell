@@ -1,4 +1,6 @@
 #![allow(dead_code, unused_variables)]
+pub mod r2;
+pub mod s1;
 pub mod s2;
 pub mod util;
 

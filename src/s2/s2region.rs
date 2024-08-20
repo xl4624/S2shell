@@ -1,4 +1,7 @@
-use crate::s2::s2cap::S2Cap;
+use crate::s2::{
+    s2cap::S2Cap, s2cell::S2Cell, s2cell_id::S2CellId, s2latlng_rect::S2LatLngRect,
+    s2point::S2Point,
+};
 
 /// An S2Region represents a two-dimensional region over the unit sphere.
 /// It is an abstract interface with various concrete subtypes.
@@ -16,4 +19,39 @@ pub trait S2Region {
     // Returns a bounding spherical cap that contains the region.  The bound may
     // not be tight.
     fn get_cap_bound(&self) -> S2Cap;
+
+    // Returns a bounding latitude-longitude rectangle that contains the region.
+    // The bound may not be tight.
+    fn get_rect_bound(&self) -> S2LatLngRect;
+
+    // Returns a small collection of S2CellIds whose union covers the region.
+    // The cells are not sorted, may have redundancies (such as cells that
+    // contain other cells), and may cover much more area than necessary.
+    //
+    // This method is not intended for direct use by client code.  Clients
+    // should typically use S2RegionCoverer::GetCovering, which has options to
+    // control the size and accuracy of the covering.  Alternatively, if you
+    // want a fast covering and don't care about accuracy, consider calling
+    // S2RegionCoverer::GetFastCovering (which returns a cleaned-up version of
+    // the covering computed by this method).
+    //
+    // GetCellUnionBound() implementations should attempt to return a small
+    // covering (ideally 4 cells or fewer) that covers the region and can be
+    // computed quickly.  The result is used by S2RegionCoverer as a starting
+    // point for further refinement.
+    //
+    // `GetCapBound().GetCellUnionBound(cell_ids)` and
+    // `GetRectBound().GetCellUnionBound(cell_ids)` are always valid
+    // implementations, but something better should be done if possible.
+    fn get_cell_union_bound(&self, cell_ids: &[S2CellId]);
+
+    // Returns true if the region completely contains the given cell, otherwise
+    // either the region does not contain the cell or the containment relationship
+    // could not be determined.
+    fn contains_cell(&self, cell: &S2Cell) -> Option<bool>;
+
+    // Returns true if and only if the given point is contained by the region.
+    // The point 'p' is generally required to be unit length, although some
+    // subtypes may relax this restriction.
+    fn contains_point(&self, point: &S2Point) -> bool;
 }
