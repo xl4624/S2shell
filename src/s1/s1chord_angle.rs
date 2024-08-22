@@ -1,91 +1,91 @@
 use crate::{s1::S1Angle, s2::S2Point};
 
-// S1ChordAngle represents the angle subtended by a chord (i.e., the straight
-// line segment connecting two points on the sphere). Its representation
-// makes it very efficient for computing and comparing distances, but unlike
-// S1Angle it is only capable of representing angles between 0 and Pi radians.
-// S1ChordAngle is intended for applications where many angles need to be
-// computed and compared, otherwise it is simpler to use S1Angle.
-//
-// S1ChordAngle also loses some accuracy as the angle approaches Pi radians.
-// There are several different ways to measure this error, including the
-// representational error (i.e., how accurately S1ChordAngle can represent
-// angles near Pi radians), the conversion error (i.e., how much precision is
-// lost when an S1Angle is converted to an S1ChordAngle), and the measurement
-// error (i.e., how accurate the S1ChordAngle(a, b) constructor is when the
-// points A and B are separated by angles close to Pi radians). All of these
-// errors differ by a small constant factor.
-//
-// For the measurement error (which is the largest of these errors and also
-// the most important in practice), let the angle between A and B be (Pi - x)
-// radians, i.e. A and B are within "x" radians of being antipodal. The
-// corresponding chord length is
-//
-//    r = 2 * sin((Pi - x) / 2) = 2 * cos(x / 2) .
-//
-// For values of x not close to Pi the relative error in the squared chord
-// length is at most 4.5 * DBL_EPSILON (see GetS2PointConstructorMaxError).
-// The relative error in "r" is thus at most 2.25 * DBL_EPSILON ~= 5e-16. To
-// convert this error into an equivalent angle, we have
-//
-//    |dr / dx| = sin(x / 2)
-//
-// and therefore
-//
-//    |dx| = dr / sin(x / 2)
-//         = 5e-16 * (2 * cos(x / 2)) / sin(x / 2)
-//         = 1e-15 / tan(x / 2)
-//
-// The maximum error is attained when
-//
-//    x  = |dx|
-//       = 1e-15 / tan(x / 2)
-//      ~= 1e-15 / (x / 2)
-//      ~= sqrt(2e-15)
-//
-// In summary, the measurement error for an angle (Pi - x) is at most
-//
-//    dx  = min(1e-15 / tan(x / 2), sqrt(2e-15))
-//      (~= min(2e-15 / x, sqrt(2e-15)) when x is small).
-//
-// On the Earth's surface (assuming a radius of 6371km), this corresponds to
-// the following worst-case measurement errors:
-//
-//     Accuracy:             Unless antipodal to within:
-//     ---------             ---------------------------
-//     6.4 nanometers        10,000 km (90 degrees)
-//     1 micrometer          81.2 kilometers
-//     1 millimeter          81.2 meters
-//     1 centimeter          8.12 meters
-//     28.5 centimeters      28.5 centimeters
-//
-// The representational and conversion errors referred to earlier are somewhat
-// smaller than this. For example, maximum distance between adjacent
-// representable S1ChordAngle values is only 13.5 cm rather than 28.5 cm. To
-// see this, observe that the closest representable value to r^2 = 4 is
-// r^2 =  4 * (1 - DBL_EPSILON / 2). Thus r = 2 * (1 - DBL_EPSILON / 4) and
-// the angle between these two representable values is
-//
-//    x  = 2 * acos(r / 2)
-//       = 2 * acos(1 - DBL_EPSILON / 4)
-//      ~= 2 * asin(sqrt(DBL_EPSILON / 2)
-//      ~= sqrt(2 * DBL_EPSILON)
-//      ~= 2.1e-8
-//
-// which is 13.5 cm on the Earth's surface.
-//
-// The worst case rounding error occurs when the value halfway between these
-// two representable values is rounded up to 4. This halfway value is
-// r^2 = (4 * (1 - DBL_EPSILON / 4)), thus r = 2 * (1 - DBL_EPSILON / 8) and
-// the worst case rounding error is
-//
-//    x  = 2 * acos(r / 2)
-//       = 2 * acos(1 - DBL_EPSILON / 8)
-//      ~= 2 * asin(sqrt(DBL_EPSILON / 4)
-//      ~= sqrt(DBL_EPSILON)
-//      ~= 1.5e-8
-//
-// which is 9.5 cm on the Earth's surface.
+/// S1ChordAngle represents the angle subtended by a chord (i.e., the straight
+/// line segment connecting two points on the sphere). Its representation
+/// makes it very efficient for computing and comparing distances, but unlike
+/// S1Angle it is only capable of representing angles between 0 and Pi radians.
+/// S1ChordAngle is intended for applications where many angles need to be
+/// computed and compared, otherwise it is simpler to use S1Angle.
+///
+/// S1ChordAngle also loses some accuracy as the angle approaches Pi radians.
+/// There are several different ways to measure this error, including the
+/// representational error (i.e., how accurately S1ChordAngle can represent
+/// angles near Pi radians), the conversion error (i.e., how much precision is
+/// lost when an S1Angle is converted to an S1ChordAngle), and the measurement
+/// error (i.e., how accurate the S1ChordAngle(a, b) constructor is when the
+/// points A and B are separated by angles close to Pi radians). All of these
+/// errors differ by a small constant factor.
+///
+/// For the measurement error (which is the largest of these errors and also
+/// the most important in practice), let the angle between A and B be (Pi - x)
+/// radians, i.e. A and B are within "x" radians of being antipodal. The
+/// corresponding chord length is
+///
+///    r = 2 * sin((Pi - x) / 2) = 2 * cos(x / 2) .
+///
+/// For values of x not close to Pi the relative error in the squared chord
+/// length is at most 4.5 * DBL_EPSILON (see GetS2PointConstructorMaxError).
+/// The relative error in "r" is thus at most 2.25 * DBL_EPSILON ~= 5e-16. To
+/// convert this error into an equivalent angle, we have
+///
+///    |dr / dx| = sin(x / 2)
+///
+/// and therefore
+///
+///    |dx| = dr / sin(x / 2)
+///         = 5e-16 * (2 * cos(x / 2)) / sin(x / 2)
+///         = 1e-15 / tan(x / 2)
+///
+/// The maximum error is attained when
+///
+///    x  = |dx|
+///       = 1e-15 / tan(x / 2)
+///      ~= 1e-15 / (x / 2)
+///      ~= sqrt(2e-15)
+///
+/// In summary, the measurement error for an angle (Pi - x) is at most
+///
+///    dx  = min(1e-15 / tan(x / 2), sqrt(2e-15))
+///      (~= min(2e-15 / x, sqrt(2e-15)) when x is small).
+///
+/// On the Earth's surface (assuming a radius of 6371km), this corresponds to
+/// the following worst-case measurement errors:
+///
+///     Accuracy:             Unless antipodal to within:
+///     ---------             ---------------------------
+///     6.4 nanometers        10,000 km (90 degrees)
+///     1 micrometer          81.2 kilometers
+///     1 millimeter          81.2 meters
+///     1 centimeter          8.12 meters
+///     28.5 centimeters      28.5 centimeters
+///
+/// The representational and conversion errors referred to earlier are somewhat
+/// smaller than this. For example, maximum distance between adjacent
+/// representable S1ChordAngle values is only 13.5 cm rather than 28.5 cm. To
+/// see this, observe that the closest representable value to r^2 = 4 is
+/// r^2 =  4 * (1 - DBL_EPSILON / 2). Thus r = 2 * (1 - DBL_EPSILON / 4) and
+/// the angle between these two representable values is
+///
+///    x  = 2 * acos(r / 2)
+///       = 2 * acos(1 - DBL_EPSILON / 4)
+///      ~= 2 * asin(sqrt(DBL_EPSILON / 2)
+///      ~= sqrt(2 * DBL_EPSILON)
+///      ~= 2.1e-8
+///
+/// which is 13.5 cm on the Earth's surface.
+///
+/// The worst case rounding error occurs when the value halfway between these
+/// two representable values is rounded up to 4. This halfway value is
+/// r^2 = (4 * (1 - DBL_EPSILON / 4)), thus r = 2 * (1 - DBL_EPSILON / 8) and
+/// the worst case rounding error is
+///
+///    x  = 2 * acos(r / 2)
+///       = 2 * acos(1 - DBL_EPSILON / 8)
+///      ~= 2 * asin(sqrt(DBL_EPSILON / 4)
+///      ~= sqrt(DBL_EPSILON)
+///      ~= 1.5e-8
+///
+/// which is 9.5 cm on the Earth's surface.
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct S1ChordAngle {
     length2: f64,
@@ -153,29 +153,26 @@ impl S1ChordAngle {
         todo!()
     }
 
-    /// Convenience methods implemented by calling S1Angle::from() first. Note that
-    /// because of the S1Angle conversion these methods are relatively expensive
-    /// (despite their lowercase names), so the results should be cached if they
-    /// are needed inside loops.
+    /// Convenience method implemented by calling S1Angle::from() first. Note that
+    /// because of the S1Angle conversion these methods are relatively expensive,
+    /// so the results should be cached if they are needed inside loops.
     pub fn radians(&self) -> f64 {
-        todo!()
+        S1Angle::from(*self).radians()
     }
 
-    /// Convenience methods implemented by calling S1Angle::from() first. Note that
-    /// because of the S1Angle conversion these methods are relatively expensive
-    /// (despite their lowercase names), so the results should be cached if they
-    /// are needed inside loops.
+    /// Convenience method implemented by calling S1Angle::from() first. Note that
+    /// because of the S1Angle conversion these methods are relatively expensive,
+    /// so the results should be cached if they are needed inside loops.
     pub fn degrees(&self) -> f64 {
-        todo!()
+        S1Angle::from(*self).radians()
     }
-
 
     pub fn is_negative(&self) -> bool {
-        todo!()
+        self.length2() < 0.0
     }
 
     pub fn is_infinity(&self) -> bool {
-        todo!()
+        self.length2().is_infinite()
     }
 
     pub fn length2(&self) -> f64 {
