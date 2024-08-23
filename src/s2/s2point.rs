@@ -21,3 +21,11 @@ use crate::util::math::vector::Vector3;
 /// points are normalized to be unit length, but some methods do not require
 /// this. See util/math/vector.h for the methods available.
 pub type S2Point = Vector3<f64>;
+
+pub fn origin() -> S2Point {
+    todo!()
+}
+
+pub fn is_unit_length(p: &S2Point) -> bool {
+    (p.norm2() - 1.0).abs() <= 5.0 * f64::EPSILON
+}

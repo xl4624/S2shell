@@ -15,7 +15,10 @@
 
 // Original Author: ericv@google.com (Eric Veach)
 
-use crate::{s1::S1Angle, s2::S2Point};
+use crate::{
+    s1::S1Angle,
+    s2::{is_unit_length, S2Point},
+};
 
 /// S1ChordAngle represents the angle subtended by a chord (i.e., the straight
 /// line segment connecting two points on the sphere). Its representation
@@ -68,13 +71,13 @@ use crate::{s1::S1Angle, s2::S2Point};
 /// On the Earth's surface (assuming a radius of 6371km), this corresponds to
 /// the following worst-case measurement errors:
 ///
-///     Accuracy:             Unless antipodal to within:
-///     ---------             ---------------------------
-///     6.4 nanometers        10,000 km (90 degrees)
-///     1 micrometer          81.2 kilometers
-///     1 millimeter          81.2 meters
-///     1 centimeter          8.12 meters
-///     28.5 centimeters      28.5 centimeters
+///    Accuracy:             Unless antipodal to within:
+///    ---------             ---------------------------
+///    6.4 nanometers        10,000 km (90 degrees)
+///    1 micrometer          81.2 kilometers
+///    1 millimeter          81.2 meters
+///    1 centimeter          8.12 meters
+///    28.5 centimeters      28.5 centimeters
 ///
 /// The representational and conversion errors referred to earlier are somewhat
 /// smaller than this. For example, maximum distance between adjacent
@@ -114,7 +117,12 @@ impl S1ChordAngle {
     }
 
     pub fn from_points(x: &S2Point, y: &S2Point) -> S1ChordAngle {
-        todo!()
+        debug_assert!(is_unit_length(x));
+        debug_assert!(is_unit_length(y));
+        let length2 = (x - y).norm2().min(4.0);
+        let angle = S1ChordAngle::new(length2);
+        debug_assert!(angle.is_valid());
+        angle
     }
 
     pub fn zero() -> S1ChordAngle {
@@ -160,14 +168,14 @@ impl S1ChordAngle {
     /// bound is accurate to within 1% for distances up to about 3100 km on the
     /// Earth's surface.
     pub fn fast_upper_bound_from(angle: S1Angle) -> S1ChordAngle {
-        todo!()
+        S1ChordAngle::from_length2(angle.radians() * angle.radians())
     }
 
     /// Construct an S1ChordAngle from the squared chord length. Note that the
     /// argument is automatically clamped to a maximum of 4.0 to handle possible
     /// roundoff errors. The argument must be non-negative.
     pub fn from_length2(length2: f64) -> S1ChordAngle {
-        todo!()
+        S1ChordAngle::new(length2.min(4.0))
     }
 
     /// Convenience method implemented by calling S1Angle::from() first. Note that
@@ -194,6 +202,12 @@ impl S1ChordAngle {
 
     pub fn length2(&self) -> f64 {
         self.length2
+    }
+
+    /// Return true if the internal representation is valid.  Negative() and
+    /// Infinity() are both considered valid.
+    pub fn is_valid(&self) -> bool {
+        todo!()
     }
 }
 

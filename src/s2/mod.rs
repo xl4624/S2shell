@@ -219,11 +219,11 @@ pub mod s2latlng_rect;
 pub mod s2point;
 pub mod s2region;
 
-pub use s2cap::S2Cap;
-pub use s2cell::S2Cell;
-pub use s2cell_id::S2CellId;
-pub use s2latlng_rect::S2LatLngRect;
-pub use s2point::S2Point;
-pub use s2region::S2Region;
+pub use s2cap::*;
+pub use s2cell::*;
+pub use s2cell_id::*;
+pub use s2latlng_rect::*;
+pub use s2point::*;
+pub use s2region::*;
 
 mod internal;

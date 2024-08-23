@@ -422,101 +422,54 @@ where
     }
 }
 
-impl<T: Scalar> Add for Vector2<T> {
-    type Output = Vector2<T>;
+macro_rules! impl_vector_ops {
+    ($vector:ident, $($field:ident),+) => {
+        impl<T: Scalar> Add for $vector<T> {
+            type Output = Self;
+            fn add(self, rhs: Self) -> Self::Output {
+                $vector::new($(self.$field + rhs.$field),+)
+            }
+        }
 
-    fn add(self, rhs: Vector2<T>) -> Self::Output {
-        &self + &rhs
+        impl<T: Scalar> Add for &$vector<T> {
+            type Output = $vector<T>;
+            fn add(self, rhs: Self) -> Self::Output {
+                $vector::new($(self.$field + rhs.$field),+)
+            }
+        }
+
+        impl<T: Scalar> Sub for $vector<T> {
+            type Output = Self;
+            fn sub(self, rhs: Self) -> Self::Output {
+                $vector::new($(self.$field - rhs.$field),+)
+            }
+        }
+
+        impl<T: Scalar> Sub for &$vector<T> {
+            type Output = $vector<T>;
+            fn sub(self, rhs: Self) -> Self::Output {
+                $vector::new($(self.$field - rhs.$field),+)
+            }
+        }
+
+        impl<T: Scalar> Mul<T> for $vector<T> {
+            type Output = Self;
+            fn mul(self, scalar: T) -> Self::Output {
+                $vector::new($(self.$field * scalar),+)
+            }
+        }
+
+        impl<T: Scalar> Mul<T> for &$vector<T> {
+            type Output = $vector<T>;
+            fn mul(self, scalar: T) -> Self::Output {
+                $vector::new($(self.$field * scalar),+)
+            }
+        }
     }
 }
 
-impl<T: Scalar> Add for &Vector2<T> {
-    type Output = Vector2<T>;
-
-    fn add(self, rhs: &Vector2<T>) -> Self::Output {
-        Vector2::new(self.x + rhs.x, self.y + rhs.y)
-    }
-}
-
-impl<T: Scalar> Add for Vector3<T> {
-    type Output = Vector3<T>;
-
-    fn add(self, rhs: Vector3<T>) -> Self::Output {
-        &self + &rhs
-    }
-}
-
-impl<T: Scalar> Add for &Vector3<T> {
-    type Output = Vector3<T>;
-
-    fn add(self, rhs: &Vector3<T>) -> Self::Output {
-        Vector3::new(self.x + rhs.x, self.y + rhs.y, self.z + rhs.z)
-    }
-}
-
-impl<T: Scalar> Sub for Vector2<T> {
-    type Output = Vector2<T>;
-
-    fn sub(self, rhs: Vector2<T>) -> Self::Output {
-        &self - &rhs
-    }
-}
-
-impl<T: Scalar> Sub for &Vector2<T> {
-    type Output = Vector2<T>;
-
-    fn sub(self, rhs: &Vector2<T>) -> Self::Output {
-        Vector2::new(self.x - rhs.x, self.y - rhs.y)
-    }
-}
-
-impl<T: Scalar> Sub for Vector3<T> {
-    type Output = Vector3<T>;
-
-    fn sub(self, rhs: Vector3<T>) -> Self::Output {
-        &self - &rhs
-    }
-}
-
-impl<T: Scalar> Sub for &Vector3<T> {
-    type Output = Vector3<T>;
-
-    fn sub(self, rhs: &Vector3<T>) -> Self::Output {
-        Vector3::new(self.x - rhs.x, self.y - rhs.y, self.z - rhs.z)
-    }
-}
-
-impl<T: Scalar> Mul<T> for Vector2<T> {
-    type Output = Vector2<T>;
-
-    fn mul(self, scalar: T) -> Self::Output {
-        &self * scalar
-    }
-}
-
-impl<T: Scalar> Mul<T> for &Vector2<T> {
-    type Output = Vector2<T>;
-
-    fn mul(self, scalar: T) -> Self::Output {
-        Vector2::new(self.x * scalar, self.y * scalar)
-    }
-}
-
-impl<T: Scalar> Mul<T> for Vector3<T> {
-    type Output = Vector3<T>;
-
-    fn mul(self, scalar: T) -> Self::Output {
-        &self * scalar
-    }
-}
-
-impl<T: Scalar> Mul<T> for &Vector3<T> {
-    type Output = Vector3<T>;
-
-    fn mul(self, scalar: T) -> Self::Output {
-        Vector3::new(self.x * scalar, self.y * scalar, self.z * scalar)
-    }
-}
+impl_vector_ops!(Vector2, x, y);
+impl_vector_ops!(Vector3, x, y, z);
 
 macro_rules! impl_scalar_mul {
     ($($ty:ident),*) => {
