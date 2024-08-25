@@ -15,7 +15,6 @@
 
 // Original Author: ericv@google.com (Eric Veach)
 
-
 use std::f64::consts::PI;
 
 use crate::{s1::S1ChordAngle, s2::s2point::S2Point};

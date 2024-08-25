@@ -15,7 +15,10 @@
 
 // Original Author: ericv@google.com (Eric Veach)
 
-use crate::s2::s2cell_id::S2CellId;
+use crate::{
+    r2::R2Rect,
+    s2::{face_uv_to_xyz, S2CellId, S2Point},
+};
 
 /// An S2Cell is an S2Region object that represents a cell. Unlike S2CellId's,
 /// it supports efficient containment and intersection tests. However, it is
@@ -26,6 +29,7 @@ pub struct S2Cell {
     face: i32,
     level: i32,
     orientation: i32,
+    uv: R2Rect,
 }
 
 enum BoundaryEdge {
@@ -48,11 +52,13 @@ impl S2Cell {
     /// ```
     pub fn new(id: S2CellId) -> Self {
         let (face, i, j, orientation) = id.to_face_ij_orientation();
+        let level = id.level();
         S2Cell {
             id,
             face,
             orientation,
-            level: id.level(),
+            level,
+            uv: S2CellId::ij_level_to_bound_uv(i, j, level),
         }
     }
 
@@ -78,5 +84,30 @@ impl S2Cell {
 
     pub fn is_leaf(&self) -> bool {
         self.level == S2CellId::MAX_LEVEL
+    }
+
+    /// This is equivalent to the S2CellId method, but has a more efficient
+    /// implementation since the level has been precomputed.
+    pub fn get_size_ij(&self) -> i32 {
+        S2CellId::get_size_ij_at_level(self.level())
+    }
+
+    /// This is equivalent to the S2CellId method, but has a more efficient
+    /// implementation since the level has been precomputed.
+    pub fn get_size_st(&self) -> f64 {
+        todo!()
+    }
+
+    /// Returns the k-th vertex of the cell (k = 0,1,2,3).  Vertices are returned
+    /// in CCW order (lower left, lower right, upper right, upper left in the UV
+    /// plane).  The points returned by GetVertexRaw are not normalized.
+    /// For convenience, the argument is reduced modulo 4 to the range [0..3].
+    pub fn get_vertex(&self, k: i32) -> S2Point {
+        todo!()
+    }
+
+    fn get_vertex_raw(&self, k: i32) -> S2Point {
+        todo!()
+        // face_uv_to_xyz(self.face, self.uv.get_vertex(k));
     }
 }

@@ -33,4 +33,5 @@
 /// flip can be surprising, especially when working with map projections where
 /// -180 and +180 are at opposite ends of the flattened map. See the comments
 /// on S1Interval for more details.
+#[derive(Debug)]
 pub struct S2LatLngRect {}

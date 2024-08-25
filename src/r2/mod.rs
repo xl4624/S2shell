@@ -31,3 +31,7 @@ impl R2Edge {
         R2Edge { v0: *v0, v1: *v1 }
     }
 }
+
+pub mod r2rect;
+
+pub use r2rect::*;

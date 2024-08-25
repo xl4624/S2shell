@@ -17,10 +17,15 @@
 
 use lazy_static::lazy_static;
 
-use crate::s2::{
-    internal::INVERT_MASK, internal::POS_TO_IJ, internal::POS_TO_ORIENTATION, internal::SWAP_MASK,
-    s2point::S2Point,
+use crate::{
+    r2::R2Rect,
+    s2::{
+        internal::{INVERT_MASK, POS_TO_IJ, POS_TO_ORIENTATION, SWAP_MASK},
+        s2point::S2Point,
+    },
 };
+
+use super::{ij_to_st_min, st_to_uv};
 
 /// An S2CellId is a 64-bit unsigned integer that uniquely identifies a
 /// cell in the S2 cell decomposition. It has the following format:
@@ -152,7 +157,7 @@ impl S2CellId {
     }
 
     pub fn face(&self) -> i32 {
-        (self.id >> Self::POS_BITS) as i32
+        (self.id >> S2CellId::POS_BITS) as i32
     }
 
     pub fn pos(&self) -> u64 {
@@ -198,7 +203,7 @@ impl S2CellId {
     //     todo!()
     // }
 
-    pub fn get_size_st() -> f64 {
+    pub fn get_size_st(&self) -> f64 {
         todo!()
     }
 
@@ -226,12 +231,22 @@ impl S2CellId {
         todo!()
     }
 
+    pub fn get_size_ij(&self) -> i32 {
+        S2CellId::get_size_ij_at_level(self.level())
+    }
+
+    pub fn get_size_ij_at_level(level: i32) -> i32 {
+        debug_assert!(level > 0);
+        debug_assert!(level < S2CellId::MAX_LEVEL);
+        1 << (S2CellId::MAX_LEVEL - level)
+    }
+
     /// Return true if id() represents a valid cell.
     ///
     /// All methods require is_valid() to be true unless otherwise specified
     /// (although not all methods enforce this).
     pub fn is_valid(&self) -> bool {
-        self.face() < Self::NUM_FACES && (self.lsb() & 0x1555555555555555) != 0
+        self.face() < S2CellId::NUM_FACES && (self.lsb() & 0x1555555555555555) != 0
     }
 
     /// Converts this cell ID to face, i, j, and orientation.
@@ -288,12 +303,29 @@ impl S2CellId {
     }
 
     pub fn lsb_for_level(&self, level: i32) -> u64 {
-        1_u64 << (2 * (Self::MAX_LEVEL - level))
+        1_u64 << (2 * (S2CellId::MAX_LEVEL - level))
+    }
+
+    /// Return the bound in (u,v)-space for the cell at the given level containing
+    /// the leaf cell with the given (i,j)-coordinates.
+    pub fn ij_level_to_bound_uv(i: i32, j: i32, level: i32) -> R2Rect {
+        let cell_size = S2CellId::get_size_ij_at_level(level);
+        let mut bound = R2Rect::default();
+
+        for d in 0..2 {
+            let ij = if d == 0 { i } else { j };
+            let ij_lo = ij & -cell_size;
+            let ij_hi = ij_lo + cell_size;
+            // bound[d][0] = st_to_uv(ij_to_st_min(ij_lo));
+            // bound[d][1] = st_to_uv(ij_to_st_min(ij_hi));
+        }
+
+        bound
     }
 }
 
 impl From<S2CellId> for S2Point {
-    fn from(val: S2CellId) -> Self {
+    fn from(val: S2CellId) -> S2Point {
         val.to_point_raw().normalize()
     }
 }
