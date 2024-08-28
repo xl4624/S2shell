@@ -23,7 +23,7 @@ use crate::{s1::S1ChordAngle, s2::s2point::S2Point};
 /// two-dimensional solid angle).  It has methods for converting angles to
 /// or from radians, degrees, and the E5/E6/E7 representations (i.e. degrees
 /// multiplied by 1e5/1e6/1e7 and rounded to the nearest integer).
-#[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
+#[derive(Debug, Copy, Clone, PartialEq, PartialOrd)]
 pub struct S1Angle {
     radians: f64,
 }

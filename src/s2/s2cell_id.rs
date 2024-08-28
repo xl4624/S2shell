@@ -16,16 +16,17 @@
 // Original Author: ericv@google.com (Eric Veach)
 
 use lazy_static::lazy_static;
+use num_traits::ToPrimitive;
 
 use crate::{
     r2::R2Rect,
     s2::{
+        face_siti_to_xyz, ij_to_st_min,
         internal::{INVERT_MASK, POS_TO_IJ, POS_TO_ORIENTATION, SWAP_MASK},
         s2point::S2Point,
+        st_to_uv,
     },
 };
-
-use super::{ij_to_st_min, st_to_uv};
 
 /// An S2CellId is a 64-bit unsigned integer that uniquely identifies a
 /// cell in the S2 cell decomposition. It has the following format:
@@ -156,16 +157,21 @@ impl S2CellId {
         self.id
     }
 
+    /// Which cube face this cell belongs to, in the range 0..5.
     pub fn face(&self) -> i32 {
         (self.id >> S2CellId::POS_BITS) as i32
     }
 
+    /// The position of the cell center along the Hilbert curve over this face,
+    /// in the range 0..(2**kPosBits-1).
     pub fn pos(&self) -> u64 {
-        todo!()
+        self.id & (0_u64 >> S2CellId::FACE_BITS)
     }
 
     pub fn level(&self) -> i32 {
+        debug_assert!(self.id != 0_u64);
         todo!()
+        // S2CellId::MAX_LEVEL - (Bt
     }
 
     /// Returns an invalid cell id.
@@ -196,7 +202,8 @@ impl S2CellId {
     }
 
     fn to_point_raw(self) -> S2Point {
-        todo!();
+        let (face, si, ti) = self.get_center_siti();
+        face_siti_to_xyz(face, si.to_u32().unwrap(), ti.to_u32().unwrap())
     }
 
     // pub fn get_center_st() -> R2Point {
@@ -204,11 +211,11 @@ impl S2CellId {
     // }
 
     pub fn get_size_st(&self) -> f64 {
-        todo!()
+        S2CellId::get_size_st_at_level(self.level())
     }
 
     pub fn get_size_st_at_level(level: i32) -> f64 {
-        todo!()
+        ij_to_st_min(S2CellId::get_size_ij_at_level(level))
     }
 
     // pub fn get_bound_st() -> R2Rect {
@@ -227,14 +234,44 @@ impl S2CellId {
     //     todo!()
     // }
 
-    pub fn get_center_siti(psi: i32, pti: i32) -> i32 {
-        todo!()
+    pub fn get_center_siti(&self) -> (i32, i32, i32) {
+        // First we compute the discrete (i,j) coordinates of a leaf cell contained
+        // within the given cell.  Given that cells are represented by the Hilbert
+        // curve position corresponding at their center, it turns out that the cell
+        // returned by ToFaceIJOrientation is always one of two leaf cells closest
+        // to the center of the cell (unless the given cell is a leaf cell itself,
+        // in which case there is only one possibility).
+        //
+        // Given a cell of size s >= 2 (i.e. not a leaf cell), and letting (imin,
+        // jmin) be the coordinates of its lower left-hand corner, the leaf cell
+        // returned by ToFaceIJOrientation() is either (imin + s/2, jmin + s/2)
+        // (imin + s/2 - 1, jmin + s/2 - 1).  The first case is the one we want.
+        // We can distinguish these two cases by looking at the low bit of "i" or
+        // "j".  In the second case the low bit is one, unless s == 2 (i.e. the
+        // level just above leaf cells) in which case the low bit is zero.
+        //
+        // In the code below, the expression ((i ^ (int(id_) >> 2)) & 1) is true
+        // if we are in the second case described above.
+        let (face, i, j, _) = self.to_face_ij_orientation();
+        let delta: i32 = if self.is_leaf() {
+            1
+        } else if (i ^ (self.id.to_i32().unwrap() >> 2)) & 1 != 0 {
+            2
+        } else {
+            0
+        };
+        let psi = 2 * i + delta;
+        let pti = 2 * j + delta;
+
+        (face, psi, pti)
     }
 
+    /// Return the edge length of this cell in (i,j)-space.
     pub fn get_size_ij(&self) -> i32 {
         S2CellId::get_size_ij_at_level(self.level())
     }
 
+    /// Like `get_size_ij`, but return the size of cells at the given level.
     pub fn get_size_ij_at_level(level: i32) -> i32 {
         debug_assert!(level > 0);
         debug_assert!(level < S2CellId::MAX_LEVEL);
@@ -247,6 +284,18 @@ impl S2CellId {
     /// (although not all methods enforce this).
     pub fn is_valid(&self) -> bool {
         self.face() < S2CellId::NUM_FACES && (self.lsb() & 0x1555555555555555) != 0
+    }
+
+    /// Return true if this is a leaf cell (more efficient than checking
+    /// whether level() == kMaxLevel).
+    pub fn is_leaf(&self) -> bool {
+        (self.id & 1) != 0
+    }
+
+    /// Return true if this is a top-level face cell (more efficient than
+    /// checking whether level() == 0).
+    pub fn is_face(&self) -> bool {
+        self.id &
     }
 
     /// Converts this cell ID to face, i, j, and orientation.
@@ -311,15 +360,13 @@ impl S2CellId {
     pub fn ij_level_to_bound_uv(i: i32, j: i32, level: i32) -> R2Rect {
         let cell_size = S2CellId::get_size_ij_at_level(level);
         let mut bound = R2Rect::default();
-
         for d in 0..2 {
             let ij = if d == 0 { i } else { j };
             let ij_lo = ij & -cell_size;
             let ij_hi = ij_lo + cell_size;
-            // bound[d][0] = st_to_uv(ij_to_st_min(ij_lo));
-            // bound[d][1] = st_to_uv(ij_to_st_min(ij_hi));
+            bound[d][0] = st_to_uv(ij_to_st_min(ij_lo));
+            bound[d][1] = st_to_uv(ij_to_st_min(ij_hi));
         }
-
         bound
     }
 }

@@ -19,6 +19,20 @@ use num_traits::ToPrimitive;
 
 use crate::r2::R2Point;
 
+pub mod s2cap;
+pub mod s2cell;
+pub mod s2cell_id;
+pub mod s2latlng_rect;
+pub mod s2point;
+pub mod s2region;
+
+pub use s2cap::*;
+pub use s2cell::*;
+pub use s2cell_id::*;
+pub use s2latlng_rect::*;
+pub use s2point::*;
+pub use s2region::*;
+
 // This file contains documentation of the various coordinate systems used
 // throughout the library. Most importantly, S2 defines a framework for
 // decomposing the unit sphere into a hierarchy of "cells". Each cell is a
@@ -212,18 +226,10 @@ pub fn get_face(p: &S2Point) -> i32 {
     }
 }
 
-pub mod s2cap;
-pub mod s2cell;
-pub mod s2cell_id;
-pub mod s2latlng_rect;
-pub mod s2point;
-pub mod s2region;
-
-pub use s2cap::*;
-pub use s2cell::*;
-pub use s2cell_id::*;
-pub use s2latlng_rect::*;
-pub use s2point::*;
-pub use s2region::*;
+pub fn face_siti_to_xyz(face: i32, si: u32, ti: u32) -> S2Point {
+    let u: f64 = st_to_uv(siti_to_st(si));
+    let v: f64 = st_to_uv(siti_to_st(ti));
+    face_uv_to_xyz(face, u, v)
+}
 
 mod internal;
