@@ -295,7 +295,7 @@ impl S2CellId {
     /// Return true if this is a top-level face cell (more efficient than
     /// checking whether level() == 0).
     pub fn is_face(&self) -> bool {
-        self.id &
+        (self.id & (self.lsb_for_level(0) - 1)) == 0
     }
 
     /// Converts this cell ID to face, i, j, and orientation.
